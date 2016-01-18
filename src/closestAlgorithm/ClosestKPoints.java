@@ -34,72 +34,77 @@ public class ClosestKPoints<T extends ClosestFindable<T>> {
 		Integer n = items.size();
 		
 		for (int i = 0; i < n; i++) {
-			
-			//l and r are the pointers to the left and right of the current hotels
-			int l = i - 1;
-			int r = i + 1;
-						
-			//In the heap we store the k minDistances
-			PriorityQueue<Distance> minDistances = new PriorityQueue<Distance>(k, Collections.reverseOrder());;
-			
-			//working variables
 			T current = items.get(i);
-			T next = null;
-			
-			double curDistance;
-			boolean outOfItems = false;
-			
-			//repeat, check adjacent items 
-			do {
-				
-				//if r goes out of bounds start over
-				if (r >= n) r = 0;
-				if (l < 0) l = n - 1;
-				
-				//if l and r are togheter
-				if (l == r || l -1 == r) {
-					outOfItems = true;
-					next = null;
-				} else  {
-					next = Math.abs(current.getNormalizedX() - items.get(l).getNormalizedX()) < Math.abs(current.getNormalizedX() - items.get(r).getNormalizedX()) ? items.get(l--) : items.get(r++);
-				}
-				
-				if (next != null) {
-					
-					//calculate the real distance
-					curDistance = current.getEuclideanDistance(next);
-					
-					//if distance is lower than the maximun in the heap
-					if (minDistances.size() < k || curDistance < minDistances.peek().getDistance()) {
-						
-						//ad this distance to the heap
-						minDistances.add(new Distance(next.getId(), curDistance));
-						
-						//we dont want ot exceed k size
-						if (minDistances.size() > k) { minDistances.poll(); }
-					}
-				}
-			
-			//exit the loop if the next hotel X's distance is greater the max allowed euclidean distance 
-			//AND the heap is complete OR we run out of items 
-			} while (!outOfItems && (Math.abs(current.getNormalizedX() - next.getNormalizedX()) < minDistances.peek().getDistance() || minDistances.size() < k));
-			
-			
-			List<Distance> closests = new ArrayList<Distance>();
-			results.put(current.getId(), closests);
-			
-			// Copy the heap results to the final results array
-			while(!minDistances.isEmpty()){
-				Distance d = minDistances.poll();
-				closests.add(d);
-				//Reverse to keep the lower result first
-				Collections.reverse(closests);
-			}
-			
-			
+			results.put(current.getId(), findClosest(current, i, k));
 		}
 		
-
 		return results;
 	}
+	
+	
+	private List<Distance> findClosest(T current, Integer index, Integer k) {
+		
+		List<Distance> closests = new ArrayList<Distance>();
+		Integer n = items.size();
+		//l and r are the pointers to the left and right of the current hotels
+		Integer l = index - 1;
+		Integer r = index + 1;
+					
+		//In the heap we store the k minDistances
+		PriorityQueue<Distance> minDistances = new PriorityQueue<Distance>(k, Collections.reverseOrder());
+		
+		//working variables
+		
+		T next; 
+		double curDistance = Double.MAX_VALUE;
+				
+		//repeat, check adjacent items 
+		do {
+			
+			//if r goes out of bounds start over. Cyclical coordenates as langitude
+			if (r >= n) r = 0;
+			if (l < 0) l = n - 1;
+			
+			//if l and r are togheter, we've reached the end of this iteration
+			if (l == r || l -1 == r) {
+				next = null;
+			} else  {
+				next = current.getXDistance(items.get(l)) < current.getXDistance(items.get(r)) 
+						? items.get(l--) 
+						: items.get(r++);
+			}
+			
+			if (next != null) {
+				
+				//calculate the real distance
+				curDistance = current.getEuclideanDistance(next);
+				
+				//if distance is lower than the maximun in the heap
+				if (minDistances.size() < k || curDistance < minDistances.peek().getDistance()) {
+					
+					//ad this distance to the heap
+					minDistances.add(new Distance(next.getId(), curDistance));
+					
+					//we dont want ot exceed k size
+					if (minDistances.size() > k) { minDistances.poll(); }
+				}
+			}
+		
+		//exit the loop if the next hotel X's distance is greater the max allowed euclidean distance 
+		//AND the heap is complete OR we run out of items 
+		} while (next != null && (curDistance < minDistances.peek().getDistance() || minDistances.size() < k));
+		
+		
+		// Copy the heap results to the final results array
+		while(!minDistances.isEmpty()){
+			Distance d = minDistances.poll();
+			closests.add(d);
+		}
+		
+		//Reverse to keep the lower result first
+		Collections.reverse(closests);
+
+		return closests;
+	}
+	
 }

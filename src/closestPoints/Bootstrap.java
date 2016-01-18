@@ -13,8 +13,8 @@ public class Bootstrap {
 	public static void main(String[] args) {
 		
 		//Config
-		int k = 10;
-		int n = 1000;
+		int k = 5;
+		int n = 10;
 		int maxLat = 90;
 		int maxLong = 180;
 		Random rand = new Random();
@@ -33,6 +33,7 @@ public class Bootstrap {
 		
 		//Print out results
 		System.out.println(result);
+		
 		
 	}
 		

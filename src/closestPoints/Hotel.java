@@ -27,16 +27,12 @@ public class Hotel implements ClosestFindable<Hotel>{
 		return y;
 	}
 	
+
 	@Override
-	public double getNormalizedX() {
-		return x;
+	public double getXDistance(Hotel b) {
+		return Math.abs(this.getX() - b.getX());
 	}
 	
-	@Override
-	public double getNormalizedY() {
-		return y;
-	}
-
 	@Override
 	public double getEuclideanDistance(Hotel b) {
 		return Math.sqrt(Math.pow(x  - b.getX() , 2) + Math.pow(y - b.getY(), 2));
